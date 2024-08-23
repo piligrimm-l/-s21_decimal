@@ -1,0 +1,162 @@
+//By admiralm
+
+#suite test_from_decimal_to_int
+#tcase s21_from_decimal_to_int_by_admiralm
+
+#test s21_from_decimal_to_int_1
+// обрабатывает нулевое значение
+    s21_decimal value = defaultDecimal();
+    int int_value;
+    int result = s21_from_decimal_to_int(value, &int_value);
+
+    ck_assert_int_eq(int_value, 0);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_decimal_to_int_2
+// базовое положительное число
+    s21_decimal value = defaultDecimal();
+    int int_value = 0;
+    
+    value.bits[0] = 0b1111111111111111;
+    int result = s21_from_decimal_to_int(value, &int_value);
+
+    ck_assert_int_eq(int_value, 65535);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_decimal_to_int_3
+// Преобразование отрицательного числа
+    s21_decimal value = defaultDecimal();
+    int int_value = 0;
+    
+    value.bits[0] = 0b1000000000000000;
+    setSign(&value, 1);
+    int result = s21_from_decimal_to_int(value, &int_value);
+
+    ck_assert_int_eq(int_value, -32768);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_decimal_to_int_4
+// Обработка масштаба и знака для отрицательного значения.
+    s21_decimal value = defaultDecimal();
+    int int_value = 0;
+    
+    value.bits[0] = 0b1000000000000000;
+    setSign(&value, 1);
+    setPower(&value, 3);
+    int result = s21_from_decimal_to_int(value, &int_value);
+
+    ck_assert_int_eq(int_value, -32);
+    ck_assert_int_eq(result, OK);    
+
+#test s21_from_decimal_to_int_5
+// обработки большого масштаба, приводящего к нулю.
+    s21_decimal value = defaultDecimal();
+    int int_value = 0;
+    
+    value.bits[0] = 0b1000000000000000;
+    setSign(&value, 1);
+    setPower(&value, 28);
+    int result = s21_from_decimal_to_int(value, &int_value);
+
+    ck_assert_int_eq(int_value, 0);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_decimal_to_int_6
+// Тесты на крайние максимальное значение
+    s21_decimal value = defaultDecimal();
+    int int_value = 0;
+    
+    value.bits[0] = INT_MAX;
+    int result = s21_from_decimal_to_int(value, &int_value);
+
+    ck_assert_int_eq(int_value, INT_MAX);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_decimal_to_int_7
+// Тесты на крайние минимального значения
+    s21_decimal value = defaultDecimal();
+    int int_value = 0;
+    
+    value.bits[0] = INT_MIN;
+    int result = s21_from_decimal_to_int(value, &int_value);
+
+    ck_assert_int_eq(int_value, INT_MIN);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_decimal_to_int_8
+//  большого числа с уменьшением его значения через масштаб.
+    s21_decimal value1 = defaultDecimal();
+    for (int i = 0; i < MANTISSA_BITS; i++) {
+        setMantissaBit(&value1, i, 1);
+    }
+    setPower(&value1, 26);
+    setSign(&value1, 1);
+    int res = 0;
+    int err = s21_from_decimal_to_int(value1, &res);
+    ck_assert_int_eq(res, -792);
+    ck_assert_int_eq(err, OK);
+
+#test s21_from_decimal_to_int_9
+// возвращение ошибки при невозможности уместить число 
+    s21_decimal value1 = defaultDecimal();
+    for (int i = 0; i < MANTISSA_BITS; i++) {
+        setMantissaBit(&value1, i, 1);
+    }
+    setPower(&value1, 4);
+    int res = 0;
+    int err = s21_from_decimal_to_int(value1, &res);
+    ck_assert_int_eq(err, CALCULATION_ERROR);
+
+#test s21_from_decimal_to_int_overflow
+// возвращает ошибку при переполнении
+    s21_decimal large_value = defaultDecimal();
+    large_value.bits[2] = 1;  
+    int result_value;
+    int result = s21_from_decimal_to_int(large_value, &result_value);
+    ck_assert_int_eq(result, CONVERSION_ERROR);
+
+
+#test from_decimal_to_int_scale_to_zero
+// учета масштаба, приводящего к обнулению значения.
+    s21_decimal value = defaultDecimal();
+    value.bits[0] = 1; 
+    int int_value = -1; 
+    setPower(&value, 28);
+    
+    int result = s21_from_decimal_to_int(value, &int_value);
+    ck_assert_int_eq(int_value, 0); 
+    ck_assert_int_eq(result, OK); 
+
+#test s21_from_decimal_to_int_overflow_2
+// возвращает ошибку при переполнении
+    s21_decimal large_value = defaultDecimal();
+    large_value.bits[2] = 0b1; 
+    large_value.bits[1] = 0;
+    large_value.bits[0] = 0;
+    setPower(&large_value, 0);  
+    int res = 0;
+    int err = s21_from_decimal_to_int(large_value, &res);
+    ck_assert_int_eq(err, CONVERSION_ERROR);  
+
+
+#test s21_from_decimal_to_int_fraction
+//     значения 123.456 в Decimal
+    s21_decimal value = defaultDecimal();
+    int int_value = 0;
+    value.bits[0] = 123456;  
+    setPower(&value, 3); 
+    int result = s21_from_decimal_to_int(value, &int_value);
+    ck_assert_int_eq(int_value, 123);    
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_decimal_to_int_many_zeros
+// большое количество нулей после десятичной точки
+    s21_decimal value = defaultDecimal();
+    int int_value = 999;  
+    // Установка значения 0.0000000001
+    value.bits[0] = 1;  
+    setPower(&value, 10);  // Масштаб 10^10, делит 1 на 10000000000
+    int result = s21_from_decimal_to_int(value, &int_value);
+    ck_assert_int_eq(int_value, 0);  
+    ck_assert_int_eq(result, OK);
+

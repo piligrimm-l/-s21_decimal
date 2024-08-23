@@ -1,0 +1,67 @@
+//By admiralm
+
+#suite test_from_int_to_decimal
+#tcase s21_from_int_to_decimal_by_admiralm
+
+#test s21_from_int_to_decimal_1
+// что ноль корректно
+    s21_decimal value = defaultDecimal();
+    int result = s21_from_int_to_decimal(0, &value);
+    ck_assert_int_eq(value.bits[0], 0);
+    ck_assert_int_eq(value.bits[1], 0);
+    ck_assert_int_eq(value.bits[2], 0);
+    ck_assert_int_eq(value.bits[3], 0);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_int_to_decimal_2
+// маленькое положительное число
+    s21_decimal value = defaultDecimal();
+    int result = s21_from_int_to_decimal(15, &value);
+    ck_assert_int_eq(value.bits[0], 0b1111);
+    ck_assert_int_eq(value.bits[1], 0);
+    ck_assert_int_eq(value.bits[2], 0);
+    ck_assert_int_eq(value.bits[3], 0);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_int_to_decimal_3
+// отрицательное значение с правильной установкой знака
+    s21_decimal value = defaultDecimal();
+    int result = s21_from_int_to_decimal(-15, &value);
+    ck_assert_int_eq(value.bits[0], 0b1111);
+    ck_assert_int_eq(value.bits[1], 0);
+    ck_assert_int_eq(value.bits[2], 0);
+    ck_assert_int_eq(value.bits[3], 0b10000000000000000000000000000000);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_int_to_decimal_4
+// максимальное значение  без установки знака.
+    s21_decimal value = defaultDecimal();
+    int result = s21_from_int_to_decimal(INT_MAX, &value);
+    ck_assert_int_eq(value.bits[0], 0b01111111111111111111111111111111);
+    ck_assert_int_eq(value.bits[1], 0);
+    ck_assert_int_eq(value.bits[2], 0);
+    ck_assert_int_eq(value.bits[3], 0);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_int_to_decimal_5
+// минимальное значение с установкой знака
+    s21_decimal value = defaultDecimal();
+    int result = s21_from_int_to_decimal(INT_MIN, &value);
+    ck_assert_int_eq(value.bits[0], 0b10000000000000000000000000000000);
+    ck_assert_int_eq(value.bits[1], 0);
+    ck_assert_int_eq(value.bits[2], 0);
+    ck_assert_int_eq(value.bits[3], 0b10000000000000000000000000000000);
+    ck_assert_int_eq(result, OK);
+
+#test s21_from_int_to_decimal_random
+    srand(time(NULL));
+    s21_decimal value = defaultDecimal();
+    int test_val = rand() % INT_MAX; // Генерация случайного положительного числа
+
+    int result = s21_from_int_to_decimal(test_val, &value);
+    ck_assert_int_eq(value.bits[0], test_val);
+    ck_assert_int_eq(value.bits[1], 0);
+    ck_assert_int_eq(value.bits[2], 0);
+    ck_assert_int_eq(value.bits[3], 0);
+    ck_assert_int_eq(result, OK);
+

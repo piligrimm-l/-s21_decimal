@@ -1,0 +1,13 @@
+#include <errno.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <float.h>
+#include <time.h>
+
+
+#include "s21_decimal.h"
+
+

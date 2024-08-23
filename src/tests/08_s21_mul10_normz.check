@@ -1,0 +1,46 @@
+#suite test_s21_normalize
+#tcase case_s21_normalize
+#test test_s21_normalize
+// Нормализация двух чисел с разным масштабом.
+    s21_decimal num1 = {{0x00000001, 0, 0, 0x00020000}};  
+    s21_decimal num2 = {{0x0000000A, 0, 0, 0x00010000}}; 
+    int error = normalize(&num1, &num2);
+    ck_assert_int_eq(error, 0);
+    ck_assert_int_eq(exponent_read(&num1), exponent_read(&num2));  
+
+
+#suite test_mulBy10
+#test mulBy10_basic 
+    s21_decimal value = defaultDecimal();
+    value.bits[0] = 1; // децимал с значением 1
+    mulBy10(&value);
+    ck_assert_uint_eq(value.bits[0], 10); // проверяем, что результат равен 10
+
+#test mulBy10_overflow
+    s21_decimal value = defaultDecimal();
+    value.bits[2] = UINT_MAX;  // Устанавливаем максимально возможное значение в последнем блоке бит
+    value.bits[1] = UINT_MAX;
+    value.bits[0] = UINT_MAX;
+
+    int result = mulBy10(&value);
+    ck_assert_int_eq(result, EXCEEDING_THE_POSITIVE_TYPE_LIMIT); // Проверяем, что функция вернула ошибку переполнения
+
+#suite test_roundBa
+#test roundBank_down
+    s21_decimal value = defaultDecimal();
+    setPower(&value, 1);  // масштаб 1, значение 0.1
+    value.bits[0] = 1;
+    int result = roundBank(&value, 1);
+    ck_assert_int_eq(result, OK);
+    ck_assert_uint_eq(value.bits[0], 0); 
+
+
+#test roundBank_up
+    s21_decimal value = defaultDecimal();
+    setPower(&value, 1);  // масштаб 1, значение 0.9
+    value.bits[0] = 9;
+    int result = roundBank(&value, 1);
+    ck_assert_int_eq(result, OK);
+    ck_assert_uint_eq(value.bits[0], 1); // ожидаем, что округление будет вверх до 1
+
+

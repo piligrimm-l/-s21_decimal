@@ -1,0 +1,137 @@
+#suite test_div
+#tcase case_s21_div 
+
+#test div_basic_division
+    s21_decimal value_1 = {{10, 0, 0, 0}};
+    s21_decimal value_2 = {{2, 0, 0, 0}};
+    s21_decimal result;
+    s21_decimal expected = {{5, 0, 0, 0}};
+    setPower(&value_1, 0);
+    setPower(&value_2, 0);
+    int status = s21_div(value_1, value_2, &result);
+    ck_assert_int_eq(status, OK);
+    ck_assert(s21_is_equal(result, expected) == TRUE);
+
+
+#test division_by_zero
+    s21_decimal value_1 = {{10, 0, 0, 0}};
+    s21_decimal zero = {{0, 0, 0, 0}};
+    s21_decimal result;
+    int status = s21_div(value_1, zero, &result);
+    ck_assert_int_eq(status, DIVISION_BY_ZERO);
+
+
+#test negative_division
+  s21_decimal val1 = {{10, 0, 0, 0}};
+    s21_decimal val2 = {{2, 0, 0, 0}};
+    s21_decimal result;
+    s21_decimal expected = {{5, 0, 0, 0}};
+    sign_write(&val1, 1);  
+    sign_write(&expected, 1);  
+    int status = s21_div(val1, val2, &result);
+    ck_assert_int_eq(status, OK);
+    ck_assert(s21_is_equal(result, expected) == TRUE);
+
+
+#test div_precision_rounding
+    s21_decimal value_1 = {{1, 0, 0, 0}};
+    s21_decimal value_2 = {{3, 0, 0, 0}};
+    s21_decimal result;
+    setPower(&value_1, 0);
+    setPower(&value_2, 0);
+    int status = s21_div(value_1, value_2, &result);
+    ck_assert_int_eq(status, OK);
+
+
+#test s21_div_4
+// Конкретное тестирование поведения при попытке деления на ноль.
+  s21_decimal value_1 = {{15, 0, 0, 0}};
+  setSign(&value_1, 1);
+  s21_decimal value_2 = {{0, 0, 0, 0}};
+  s21_decimal result = {{0, 0, 0, 0}};
+  s21_decimal check = {{0, 0, 0, 0}};
+  int return_value = s21_div(value_1, value_2, &result);
+  ck_assert_int_eq(s21_is_equal(result, check), 1);
+  ck_assert_int_eq(return_value, DIVISION_BY_ZERO);
+
+
+#test s21_div_5
+// Тестирование деления, где делитель имеет значительный масштаб.
+  s21_decimal value_1 = {{4, 0, 0, 0}};
+  s21_decimal value_2 = {{4, 0, 0, 0}};
+  s21_decimal result = {0};
+  s21_decimal test = {0};
+  setPower(&value_1, 0);  
+  setPower(&value_2, 3); 
+  test.bits[0] = 1000;
+  int res = s21_div(value_1, value_2, &result);
+
+  ck_assert_uint_eq(result.bits[0], test.bits[0]);
+  ck_assert_uint_eq(res, 0);
+
+
+#test s21_div_11_2
+// Деление с использованием больших чисел, проверка на корректность вычислений.
+  s21_decimal src1, src2, result;
+  src1.bits[0] = 0x0006BFD0;
+  src1.bits[1] = 0x00000000;
+  src1.bits[2] = 0x00000000;
+  src1.bits[3] = 0x00000000;
+
+  src2.bits[0] = 0x00000028;
+  src2.bits[1] = 0x00000000;
+  src2.bits[2] = 0x00000000;
+  src2.bits[3] = 0x00000000;
+
+  int check = s21_div(src1, src2, &result);
+  int check_origin = 0;
+  ck_assert_int_eq(check_origin, check);
+  ck_assert_int_eq(result.bits[3], 0x00000000);
+  ck_assert_int_eq(result.bits[2], 0x00000000);
+  ck_assert_int_eq(result.bits[1], 0x00000000);
+  ck_assert_int_eq(result.bits[0], 0x00002B32);
+
+#test s21_div_13_2
+// Деление очень больших чисел, проверка на корректность и возможное переполнение.
+//   printf("div_13_2\n");
+  s21_decimal src1, src2, result, expected;
+  src1.bits[0] = 0xFFFFFFFF;
+  src1.bits[1] = 0xFFFFFFFF;
+  src1.bits[2] = 0xFFFFFFFF;
+  src1.bits[3] = 0x00000000; 
+  src2.bits[0] = 0x00000001;
+  src2.bits[1] = 0x00000000;
+  src2.bits[2] = 0x00000000;
+  src2.bits[3] = 0x00000000; 
+  expected.bits[0] = 0xFFFFFFFF; 
+  expected.bits[1] = 0xFFFFFFFF;
+  expected.bits[2] = 0xFFFFFFFF;
+  expected.bits[3] = 0x00000000;
+  
+  int status = s21_div(src1, src2, &result);
+  ck_assert_int_eq(status, OK);
+  ck_assert_int_eq(result.bits[3], expected.bits[3]);
+  ck_assert_int_eq(result.bits[2], expected.bits[2]);
+  ck_assert_int_eq(result.bits[1], expected.bits[1]);
+  ck_assert_int_eq(result.bits[0], expected.bits[0]);
+
+#test s21_div_14_2
+//   printf("div_14_2\n");
+// Деление на ноль, базовая проверка на функциональность и ошибки.
+  s21_decimal val1 = {{2, 0, 0, 0}};
+  s21_decimal val2 = {{0, 0, 0, 0}};
+  s21_decimal res = {{0}};
+  ck_assert_int_eq(3, s21_div(val1, val2, &res));
+
+
+#test s21_div_15_2 
+// Деление положительного числа на ноль, проверка на стандартную ошибку деления на ноль.
+  s21_decimal value_1 = {{15, 0, 0, 0}};
+  s21_decimal value_2 = {{0, 0, 0, 0}};
+  s21_decimal result = {{0, 0, 0, 0}};
+  s21_decimal check = {{0, 0, 0, 0}};
+  int return_value = s21_div(value_1, value_2, &result);
+  ck_assert_int_eq(s21_is_equal(result, check), 1);
+  ck_assert_int_eq(return_value, 3);
+
+

@@ -1,0 +1,418 @@
+#suite test_from_float_to_decimal
+#test float_to_dec_positive_with_fraction
+
+  float num = 829834.3;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 8298343);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 65536);
+
+
+#test float_to_dec_mid_positive_fraction
+// Конвертация среднего положительного числа с дробной частью.
+  float num = 8934.278;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 8934278);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 196608);
+
+
+/*
+test float_to_dec_negative_with_fraction
+//Конвертация отрицательного числа с дробной частью.
+  float num = -23423.82;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 2342382);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], -2147352576);
+
+
+test float_to_dec_negative_with_fraction_v1
+//Конвертация отрицательного числа с дробной частью.
+  float num = -23423.82;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, OK);
+  ck_assert_int_eq(res_bits.bits[0], 2342382);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 0b10000000000000100000000000000000);
+*/
+
+#test float_to_dec_negative_with_fraction_v2
+//Конвертация отрицательного числа с дробной частью.
+  float num = -23423.82;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, OK);
+  ck_assert_int_eq(res_bits.bits[0], 2342382);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(getSign(res_bits), 1); 
+  ck_assert_int_eq(getPower(res_bits), 2);
+
+#test float_to_dec_negative_with_fraction_v3
+//Конвертация отрицательного числа с дробной частью.
+  float num1 = -23423.82;
+  float num2 = 0;
+
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res1 = s21_from_float_to_decimal(num1, &res_bits);
+  int res2 = s21_from_decimal_to_float(res_bits, &num2);
+
+  ck_assert_int_eq(res1, OK);
+  ck_assert_int_eq(res2, OK);
+  ck_assert_float_eq_tol(num2, num1, 0.0001);
+
+
+#test float_to_dec_large_negative_with_fraction
+//Конвертация большого отрицательного числа с дробной частью.
+  // printf("float_to_dec_large_negative_with_fraction\n");
+  float num = -12345678.9;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, OK);
+  ck_assert_int_eq(res_bits.bits[0], 12345680); 
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_float_lt(num , 0.0);
+  //ck_assert_int_eq(sign_read(&res_bits), 1); 
+  ck_assert_int_eq(getSign(res_bits), 1); 
+  ck_assert_int_eq(getPower(res_bits), 0);
+
+#test float_to_dec_very_large_negative_integer
+//Конвертация очень большого отрицательного целого числа
+// printf("float_to_dec_very_large_negative_integer\n");
+  float num = -129312304;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 129312300);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_float_lt(num , 0.0);
+  ck_assert_int_eq(getSign(res_bits), 1);
+
+
+#test float_to_dec_large_positive_integer
+//Конвертация большого положительного целого числа
+// printf("float_to_dec_very_large_positive_integer\n");
+  float num = 823923;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 823923);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 0);
+
+
+#test float_to_dec_fractional_mid_size
+//Проверяет конвертацию числа среднего размера с дробной частью
+  float num = 23744.78;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 2374478);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 131072);
+
+
+#test float_to_dec_negative_fractional_small
+// конвертацию небольшого отрицательного числа с дробной частью.
+  float num = -2393.823;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 2393823);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(getSign(res_bits), 1);
+  ck_assert_int_eq(getPower(res_bits), 3);
+
+
+
+#test float_to_dec_large_positive
+// конвертацию большого положительного числа
+  float num = 912479.2;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 9124792);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 65536);
+
+
+#test float_to_dec_negative_large
+// конвертацию большого отрицательного числа
+  float num = -123234.7;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 1232347);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(getSign(res_bits), 1); 
+  ck_assert_int_eq(getPower(res_bits), 1);
+
+
+#test float_to_dec_mid_size_positive
+// конвертацию числа среднего размера
+  float num = 10121.7;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 101217);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 65536);
+
+
+#test float_to_dec_large_positive_integer_exact
+// конвертацию большого целого числа без дробной части
+  float num = 802000;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 802000);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 0);
+
+
+#test float_to_dec_small_fractional
+// конвертацию малого числа с дробной частью
+  float num = 1.3331;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 13331);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 262144);
+
+
+#test float_to_dec_negative_small_fractional
+// конвертацию малого отрицательного числа с дробной частью
+  float num = -1.667283;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 1667283);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(getSign(res_bits), 1);
+
+
+#test float_to_dec_very_small_fractional
+// конвертацию очень маленького положительного числа с дробной частью
+  float num = 0.5632482;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 5632482);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 458752);
+
+
+#test float_to_dec_negative_very_small_fractional
+// конвертацию очень маленького отрицательного числа с дробной частью
+  float num = -0.6527385;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 6527385);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(getSign(res_bits), 1); 
+  ck_assert_int_eq(getPower(res_bits), 7);
+
+
+#test float_to_dec_zero
+//  конвертацию числа ноль
+  float num = 0;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+  int res = s21_from_float_to_decimal(num, &res_bits);
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 0);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 0);
+
+
+#test float_to_dec_small_integer
+// конвертацию маленького целого числа
+  float num = 42;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 42);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 0);
+
+#test float_to_dec_negative_small_integer
+// конвертация маленького отрицательного целого числа
+  float num = -42;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 42); 
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(getSign(res_bits), 1);
+
+
+#test float_to_dec_negative_mid_fractional
+//  конвертацию отрицательного числа среднего размера с дробной частью.
+//  printf("float_to_dec_negative_mid_fractional\n");
+  float num = -8932.617;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, 0);
+  ck_assert_int_eq(res_bits.bits[0], 8932617);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(getSign(res_bits), 1);
+
+
+#test float_to_dec_very_small
+// Проверка на очень маленькое положительное число.
+printf("Test: float_to_dec_very_small\n");
+  float num = 1e-29;
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, CONVERSION_ERROR);
+  ck_assert_int_eq(res_bits.bits[0], 0);
+  ck_assert_int_eq(res_bits.bits[1], 0);
+  ck_assert_int_eq(res_bits.bits[2], 0);
+  ck_assert_int_eq(res_bits.bits[3], 0);
+
+#test float_to_dec_very_large
+printf("Test: float_to_dec_very_large\n");
+// Проверка на очень большое число.
+  float num = 1e+40; // Используйте значение больше указанного предела.
+  s21_decimal res_bits = {{0, 0, 0, 0}};
+
+  int res = s21_from_float_to_decimal(num, &res_bits);
+
+  ck_assert_int_eq(res, CONVERSION_ERROR);
+
+#test float_test_new
+  float a = 1234567890123456789012345678.0f;
+  float b = 0.0;
+  int error = 0;
+  int rc = 0;
+  s21_decimal dec = {0};
+  rc = s21_from_float_to_decimal(a, &dec);
+  s21_from_decimal_to_float(dec, &b);
+  ck_assert_int_eq(error, rc);
+  ck_assert_float_eq(b, 1234568000000000000000000000.0f);
+
+#test positive_zero
+    float num = +0.0;
+    s21_decimal res_bits = {{0, 0, 0, 0}};
+    int res = s21_from_float_to_decimal(num, &res_bits);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(res_bits.bits[0], 0);
+    ck_assert_int_eq(res_bits.bits[1], 0);
+    ck_assert_int_eq(res_bits.bits[2], 0);
+    ck_assert_int_eq(getSign(res_bits), 0); 
+
+#test negative_zero
+    float num = -0.0;
+    s21_decimal res_bits = {{0, 0, 0, 0}};
+    int res = s21_from_float_to_decimal(num, &res_bits);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(res_bits.bits[0], 0);
+    ck_assert_int_eq(res_bits.bits[1], 0);
+    ck_assert_int_eq(res_bits.bits[2], 0);
+    ck_assert_int_eq(getSign(res_bits), 1);
+
+#suite test_set_sign_get_sing
+#test set_sign_positive_admirral
+    s21_decimal decimal = defaultDecimal();
+    setSign(&decimal, 0);
+    int sign = getSign(decimal);
+    ck_assert_int_eq(sign, 0);
+
+
+// Test setting and getting a negative sign
+#test set_sign_negative_admirral
+    s21_decimal decimal = defaultDecimal();
+    setSign(&decimal, 1);
+    int sign = getSign(decimal);
+    ck_assert_int_eq(sign, 1);
+
+// Test setting the sign with invalid inputs
+#test set_sign_invalid_admirral
+printf("Test: set_sign_invalid\n");
+    s21_decimal decimal = defaultDecimal();
+    bool result = setSign(&decimal, 2); // Invalid sign value
+    ck_assert_int_eq(result, false);
+
+
+
+
+
+
+
+
+  

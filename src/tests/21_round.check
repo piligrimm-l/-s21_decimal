@@ -1,0 +1,102 @@
+#suite test_round
+#tcase round_case
+
+#test round_no_fraction
+// без дробной части
+    s21_decimal value = defaultDecimal();
+    value.bits[0] = 123;
+    setPower(&value, 0);
+    s21_decimal result;
+    int status = s21_round(value, &result);
+    ck_assert_int_eq(status, OK);
+    ck_assert_uint_eq(result.bits[0], 123);
+    ck_assert_uint_eq(result.bits[3], 0);
+
+#test round_fraction_less_than_half 
+// дробной частью меньше 0.5
+    s21_decimal value = defaultDecimal();
+    value.bits[0] = 1233;  // 123.3 при масштабе 1
+    setPower(&value, 1);
+    s21_decimal result;
+    int status = s21_round(value, &result);
+    ck_assert_int_eq(status, OK);
+    ck_assert_uint_eq(result.bits[0], 123);
+    ck_assert_uint_eq(result.bits[3], 0);
+
+#test round_fraction_half_or_more
+// равной или больше 0.5
+    s21_decimal value = defaultDecimal();
+    value.bits[0] = 1235;  // 123.5 при масштабе 1
+    setPower(&value, 1);
+    s21_decimal result;
+    int status = s21_round(value, &result);
+    ck_assert_int_eq(status, OK);
+    ck_assert_uint_eq(result.bits[0], 124);
+    ck_assert_uint_eq(result.bits[3], 0);
+
+#test round_negative_number
+    s21_decimal value = defaultDecimal();
+    value.bits[0] = 1235;  // Представление 123.5 при масштабе 1
+    setPower(&value, 1);
+    setSign(&value, 1);  
+    s21_decimal result;
+    int status = s21_round(value, &result);
+    ck_assert_int_eq(status, OK);
+    ck_assert_int_eq(getSign(result), 1);  
+    ck_assert_int_eq(result.bits[0], 124);  
+    ck_assert_int_eq(result.bits[3] & 0x80000000, 0x80000000); 
+
+#test s21_round_74_negaticv
+  s21_decimal value_1 = {{7444923, 0, 0, 0}};
+  setSign(&value_1, 1);
+  setPower(&value_1, 5);
+  s21_decimal check = {{74, 0, 0, 0}};
+  setSign(&check, 1);
+  s21_decimal result;
+  int return_value = s21_round(value_1, &result);
+  ck_assert_int_eq(s21_is_equal(result, check), 1);
+  ck_assert_int_eq(return_value, OK);
+
+#test round_large_negative_number 
+    s21_decimal value = defaultDecimal();
+    // Представление -9999999999.999999999 при высоком масштабе
+    value.bits[0] = 9999999999 % UINT_MAX; 
+    value.bits[1] = 9999999999 / UINT_MAX; 
+    setPower(&value, 9);  
+    setSign(&value, 1); 
+
+    s21_decimal result;
+    int status = s21_round(value, &result);
+    ck_assert_int_eq(status, OK);
+    ck_assert_int_eq(getSign(result), 1);  
+    ck_assert_int_eq(result.bits[0], 10);  
+    ck_assert_int_eq(result.bits[3] & 0x80000000, 0x80000000); 
+
+#test round_boundary_value 
+    s21_decimal value = defaultDecimal();
+    value.bits[0] = 9999999;  // Представление 0.9999999 при высоком масштабе
+    setPower(&value, 7);
+    s21_decimal result;
+    int status = s21_round(value, &result);
+    ck_assert_int_eq(status, OK);
+    ck_assert_uint_eq(result.bits[0], 1);  
+    ck_assert_uint_eq(result.bits[3], 0); 
+
+#test round_5
+  s21_decimal src, res, res2;
+  src.bits[0] = 0b10010111011100111001111111111111;
+  src.bits[1] = 0b00111100000010000011000110001101;
+  src.bits[2] = 0b00000000000000000000000000000001;
+  src.bits[3] = 0b10000000000001110000000000000000;
+  res.bits[3] = 0b10000000000000000000000000000000;
+  res.bits[2] = 0;
+  res.bits[1] = 0b00000000000000000000001000010010;
+  res.bits[0] = 0b00110110101101101000110001000000;
+  s21_round(src, &res2);
+  ck_assert_int_eq(res2.bits[0], res.bits[0]);
+  ck_assert_int_eq(res2.bits[1], res.bits[1]);
+  ck_assert_int_eq(res2.bits[2], res.bits[2]);
+  ck_assert_int_eq(res2.bits[3], res.bits[3]);
+
+
+

@@ -1,0 +1,71 @@
+#suite test_add
+#tcase case_s21_add
+
+#test add_positive 
+    s21_decimal value_1 = {{1, 0, 0, 0}};
+    s21_decimal value_2 = {{2, 0, 0, 0}};
+    s21_decimal result;
+    s21_decimal expected = {{3, 0, 0, 0}};
+    setPower(&value_1, 0);
+    setPower(&value_2, 0);
+    int return_value = s21_add(value_1, value_2, &result);
+    ck_assert_int_eq(s21_is_equal(result, expected), TRUE);
+    ck_assert_int_eq(return_value, OK);
+
+
+#test s21_add_positive_negative
+    // Тест сложения положительного и отрицательного числа
+    s21_decimal value_1 = {{10, 0, 0, 0}};
+    s21_decimal value_2 = {{5, 0, 0, 0}}; 
+    setSign(&value_2, 1);
+    s21_decimal result;
+    s21_decimal expected = {{5, 0, 0, 0}};
+    setPower(&value_1, 0);
+    setPower(&value_2, 0);
+    int return_value = s21_add(value_1, value_2, &result);
+    ck_assert_int_eq(s21_is_equal(result, expected), TRUE);
+    ck_assert_int_eq(return_value, OK);
+
+
+#test add_zero
+  s21_decimal value_1 = {{0, 0, 0, 0}};
+  s21_decimal value_2 = {{0, 0, 0, 0}};
+  s21_decimal result;
+  s21_decimal expected = {{0, 0, 0, 0}};
+  int return_value = s21_add(value_1, value_2, &result);
+  ck_assert_int_eq(s21_is_equal(result, expected), TRUE);
+  ck_assert_int_eq(return_value, OK);
+
+
+#test add_negative_result 
+// Тест сложения с результатом в виде отрицательного числа
+    s21_decimal value_1 = {{5, 0, 0, 0}};
+    s21_decimal value_2 = {{10, 0, 0, 0}}; // Отрицательное число
+    setSign(&value_2, 1); // Устанавливаем знак на отрицательный
+    s21_decimal result;
+    s21_decimal expected = {{5, 0, 0, 0}};
+    setSign(&expected, 1); 
+    setPower(&value_1, 0);
+    setPower(&value_2, 0);
+    int return_value = s21_add(value_1, value_2, &result);
+    ck_assert_int_eq(s21_is_equal(result, expected), TRUE);
+    ck_assert_int_eq(return_value, OK);
+
+
+#test add_overflow
+  s21_decimal value_1 = {{UINT_MAX, UINT_MAX, UINT_MAX, 0}};
+  s21_decimal value_2 = {{1, 0, 0, 0}};
+  s21_decimal result;
+  int return_value = s21_add(value_1, value_2, &result);
+  ck_assert_int_eq(return_value, EXCEEDING_THE_POSITIVE_TYPE_LIMIT);
+
+#test add_max
+  s21_decimal value_1 = {{UINT_MAX, UINT_MAX, UINT_MAX, 0}};
+  s21_decimal value_2 = {{0, 0, 0, 0}};
+  s21_decimal result;
+  s21_decimal expected = {{UINT_MAX, UINT_MAX, UINT_MAX, 0}};
+  int return_value = s21_add(value_1, value_2, &result);
+  ck_assert_int_eq(s21_is_equal(result, expected), TRUE);
+  ck_assert_int_eq(return_value, OK);
+
+

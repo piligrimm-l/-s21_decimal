@@ -1,0 +1,41 @@
+#suite test_negate
+#tcase negate_case
+
+#test negate_positive
+    s21_decimal src = defaultDecimal(); 
+    src.bits[0] = 10; 
+    s21_decimal result = {0};
+    s21_negate(src, &result);
+    ck_assert_int_eq(result.bits[3] >> 31, 1); 
+    ck_assert_int_eq(result.bits[0], 10); 
+
+#test negate_negative
+    s21_decimal src = defaultDecimal(); 
+    src.bits[0] = 10;
+    src.bits[3] = 1U << 31; 
+    s21_decimal result = {0};
+    s21_negate(src, &result);
+    ck_assert_int_eq(result.bits[3] >> 31, 0); 
+    ck_assert_int_eq(result.bits[0], 10);
+
+#test s21_negate_1_admiralm
+    s21_decimal value1 = defaultDecimal();
+    s21_decimal value2 = defaultDecimal();
+    int int_value = 0;
+
+    s21_from_int_to_decimal(65000, &value1);
+    int result = s21_negate(value1, &value2);
+    s21_from_decimal_to_int(value2, &int_value);
+
+    ck_assert_int_eq(int_value, -65000);
+    ck_assert_int_eq(result, OK);
+
+#test s21_negate_2_admiralm
+    s21_decimal value1 = defaultDecimal();
+    s21_decimal value2 = defaultDecimal();
+    
+    int result = s21_negate(value1, &value2);
+
+    ck_assert_int_eq(value2.bits[3], 0b10000000000000000000000000000000);
+    ck_assert_int_eq(result, OK);
+
